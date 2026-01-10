@@ -41,9 +41,14 @@ async fn gracefull_shutdown(handle: ServerHandle) -> anyhow::Result<()> {
             println!("Received SIGINT (Ctrl+C). Initiating graceful shutdown.");
         },
     }
+    configs::db::db_pool_deletion().await?;
     configs::app_config_deletion().await?;
     handle.stop_graceful(None);
     Ok(())
+}
+
+async fn main_service() -> Service {
+    Service::new(router().await).hoop(Logger::new())
 }
 
 #[tokio::main]
@@ -64,7 +69,7 @@ async fn main() -> anyhow::Result<()> {
     // Create router with two endpoints:
     // - / (root path) returns English greeting
     // - /你好 returns Chinese greeting
-    let router = router().await;
+    let router = main_service().await;
 
     // Print router structure for debugging
     println!("{router:?}");
@@ -80,7 +85,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_hello_world() {
-        let service = Service::new(super::router().await);
+        let service = super::main_service().await;
         let mut response = TestClient::get(format!("http://127.0.0.1:8698/"))
             .send(&service)
             .await;
@@ -93,7 +98,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_hello_world_cn() {
-        let service = Service::new(super::router().await);
+        let service = super::main_service().await;
         let mut response = TestClient::get(format!("http://127.0.0.1:8698/你好"))
             .send(&service)
             .await;

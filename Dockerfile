@@ -13,6 +13,7 @@ FROM redhat/ubi9
 RUN yum install -y openssl-libs && yum clean all
 
 COPY --from=builder /app/target/release/salvo-vite-test /usr/local/bin/
+COPY .env .env
 
 EXPOSE 8698
 CMD ["salvo-vite-test"]

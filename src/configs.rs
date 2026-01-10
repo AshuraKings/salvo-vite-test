@@ -3,6 +3,8 @@ use std::sync::{Arc, LazyLock};
 use clap::Parser;
 use tokio::sync::Mutex;
 
+pub mod db;
+
 pub fn load_env() -> anyhow::Result<()> {
     dotenv::dotenv()?;
     Ok(())
@@ -12,6 +14,12 @@ pub fn load_env() -> anyhow::Result<()> {
 pub struct AppConfig {
     #[arg(long, env = "HTTP_SERVER_PORT", default_value = "8698")]
     pub http_server_port: u16,
+    #[arg(
+        long,
+        env = "DB_URL",
+        default_value = "postgres://postgres:password@localhost:5432/postgres"
+    )]
+    pub db_url: String,
 }
 
 static APP_CONFIG: LazyLock<Arc<Mutex<Option<AppConfig>>>> =
@@ -38,16 +46,12 @@ pub async fn app_config_deletion() -> anyhow::Result<()> {
 #[cfg(test)]
 mod tests {
     #[tokio::test]
-    async fn test_app_config_deleting() {
-        let res = super::app_config_deletion().await;
-        assert!(res.is_ok());
-    }
-
-    #[tokio::test]
     async fn test_app_config_load() {
         let _ = super::load_env();
         let app = super::app_config_load().await;
         assert_eq!(8698, app.http_server_port);
+        let res = super::app_config_deletion().await;
+        assert!(res.is_ok());
     }
 
     #[test]
