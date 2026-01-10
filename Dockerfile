@@ -2,7 +2,9 @@
 FROM rust:latest as builder
 
 WORKDIR /app
-COPY . .
+COPY Cargo.toml Cargo.toml
+COPY Cargo.lock Cargo.lock
+COPY src/ src/
 RUN cargo build --release
 
 # Runtime stage
