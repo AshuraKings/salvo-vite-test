@@ -63,3 +63,35 @@ async fn main() {
     // Start serving requests
     server.serve(router).await;
 }
+
+#[cfg(test)]
+mod tests {
+    use salvo::prelude::*;
+    use salvo::test::{ResponseExt, TestClient};
+
+    #[tokio::test]
+    async fn test_hello_world() {
+        let service = Service::new(super::router().await);
+        let mut response = TestClient::get(format!("http://127.0.0.1:8698/"))
+            .send(&service)
+            .await;
+        let opt_status = response.status_code;
+        assert!(opt_status.is_some());
+        assert_eq!(StatusCode::OK, opt_status.unwrap());
+        let content = response.take_string().await.unwrap();
+        assert_eq!(content, "Hello World");
+    }
+
+    #[tokio::test]
+    async fn test_hello_world_cn() {
+        let service = Service::new(super::router().await);
+        let mut response = TestClient::get(format!("http://127.0.0.1:8698/你好"))
+            .send(&service)
+            .await;
+        let opt_status = response.status_code;
+        assert!(opt_status.is_some());
+        assert_eq!(StatusCode::OK, opt_status.unwrap());
+        let content = response.take_string().await.unwrap();
+        assert_eq!(content, "你好，世界！");
+    }
+}
