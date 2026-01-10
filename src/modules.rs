@@ -1,12 +1,16 @@
 use salvo::prelude::*;
 
+mod auth;
+
 #[handler]
 async fn hello() -> &'static str {
     "Hello World"
 }
 
 pub async fn modules_router() -> Router {
-    Router::with_path("api").get(hello)
+    Router::with_path("api")
+        .get(hello)
+        .push(auth::auth_router().await)
 }
 
 #[cfg(test)]

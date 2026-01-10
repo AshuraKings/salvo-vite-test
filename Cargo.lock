@@ -1152,6 +1152,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "glob"
+version = "0.3.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0cc23270f6e1808e30a928bdc84dea0b9b4136a8bc82338574f23baf47bbd280"
+
+[[package]]
 name = "h2"
 version = "0.4.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1567,6 +1573,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "indoc"
+version = "2.0.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "79cf5c93f93228cf8efb3ba362535fb11199ac548a09ce117c9b1adc3030d706"
+dependencies = [
+ "rustversion",
+]
+
+[[package]]
 name = "inherent"
 version = "1.0.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1762,6 +1777,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "112b39cec0b298b6c1999fee3e31427f74f676e4cb9879ed1a121b43661a4154"
 
 [[package]]
+name = "matchers"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d1525a2a28c7f4fa0fc98bb91ae755d1e2d1505079e05539e35bc876b5d65ae9"
+dependencies = [
+ "regex-automata",
+]
+
+[[package]]
 name = "md-5"
 version = "0.10.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1776,6 +1800,14 @@ name = "memchr"
 version = "2.7.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f52b00d39961fc5b2736ea853c9cc86238e165017a493d1d5c8eac6bdc4cc273"
+
+[[package]]
+name = "migration"
+version = "0.1.0"
+dependencies = [
+ "sea-orm-migration",
+ "tokio",
+]
 
 [[package]]
 name = "mime"
@@ -2822,6 +2854,7 @@ dependencies = [
  "clap",
  "dotenv",
  "log",
+ "migration",
  "salvo",
  "sea-orm",
  "serde",
@@ -2992,6 +3025,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "sea-orm-cli"
+version = "2.0.0-rc.27"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f50ae78e4442db69930949a8bcf3b82b0e992c8ea389ae2b1d80504029adab5d"
+dependencies = [
+ "chrono",
+ "clap",
+ "dotenvy",
+ "glob",
+ "indoc",
+ "regex",
+ "tracing",
+ "tracing-subscriber",
+ "url",
+]
+
+[[package]]
 name = "sea-orm-macros"
 version = "2.0.0-rc.27"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3004,6 +3054,22 @@ dependencies = [
  "sea-bae",
  "syn 2.0.114",
  "unicode-ident",
+]
+
+[[package]]
+name = "sea-orm-migration"
+version = "2.0.0-rc.27"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "433fa69cd3f8dc754a2dc51106aee10262fec84ac5195ff7d9966dd1c0d467bd"
+dependencies = [
+ "async-trait",
+ "clap",
+ "dotenvy",
+ "sea-orm",
+ "sea-orm-cli",
+ "sea-schema",
+ "tracing",
+ "tracing-subscriber",
 ]
 
 [[package]]
@@ -3914,10 +3980,14 @@ version = "0.3.22"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2f30143827ddab0d256fd843b7a66d164e9f271cfa0dde49142c5ca0ca291f1e"
 dependencies = [
+ "matchers",
  "nu-ansi-term",
+ "once_cell",
+ "regex-automata",
  "sharded-slab",
  "smallvec",
  "thread_local",
+ "tracing",
  "tracing-core",
  "tracing-log",
 ]

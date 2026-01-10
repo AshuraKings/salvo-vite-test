@@ -3,6 +3,7 @@ use std::{
     time::Duration,
 };
 
+use migration::{Migrator, MigratorTrait};
 use sea_orm::{ConnectOptions, Database, DatabaseConnection};
 use tokio::sync::Mutex;
 
@@ -22,8 +23,10 @@ pub async fn db_pool_load() -> anyhow::Result<DatabaseConnection> {
             .max_lifetime(Duration::from_secs(8))
             .sqlx_logging(false) // disable SQLx logging
             .sqlx_logging_level(log::LevelFilter::Info)
-            .set_schema_search_path("my_schema");
-        *lock = Some(Database::connect(opt).await?);
+            .set_schema_search_path("public");
+        let db = Database::connect(opt).await?;
+        Migrator::up(&db, None).await?;
+        *lock = Some(db);
     }
     Ok(lock.clone().unwrap())
 }
@@ -43,7 +46,7 @@ mod tests {
     async fn test_db() {
         let _ = crate::configs::load_env();
         let res_db = super::db_pool_load().await;
-        assert!(res_db.is_ok());
+        //assert!(res_db.is_ok());
         let db = res_db.unwrap();
         assert!(db.ping().await.is_ok());
         let res = super::db_pool_deletion().await;
