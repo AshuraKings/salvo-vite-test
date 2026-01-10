@@ -1,5 +1,6 @@
 use salvo::{conn::tcp::TcpAcceptor, prelude::*, server::ServerHandle};
 
+mod configs;
 mod modules;
 
 // Handler for English greeting
@@ -22,7 +23,10 @@ async fn router() -> Router {
 }
 
 async fn server() -> Server<TcpAcceptor> {
-    let acceptor = TcpListener::new("0.0.0.0:8698").bind().await;
+    let app = configs::app_config_load().await;
+    let acceptor = TcpListener::new(("0.0.0.0", app.http_server_port))
+        .bind()
+        .await;
     Server::new(acceptor)
 }
 
@@ -37,12 +41,14 @@ async fn gracefull_shutdown(handle: ServerHandle) -> anyhow::Result<()> {
             println!("Received SIGINT (Ctrl+C). Initiating graceful shutdown.");
         },
     }
+    configs::app_config_deletion().await?;
     handle.stop_graceful(None);
     Ok(())
 }
 
 #[tokio::main]
-async fn main() {
+async fn main() -> anyhow::Result<()> {
+    configs::load_env()?;
     // Initialize logging subsystem
     tracing_subscriber::fmt().init();
 
@@ -64,7 +70,7 @@ async fn main() {
     println!("{router:?}");
 
     // Start serving requests
-    server.serve(router).await;
+    Ok(server.serve(router).await)
 }
 
 #[cfg(test)]

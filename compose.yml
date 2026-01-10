@@ -1,4 +1,19 @@
 services:
+  db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "postgres" ]
+      interval: 1m30s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
   app:
     build:
       context: .
@@ -6,3 +21,6 @@ services:
     ports:
       - 8698:8698
     restart: always
+
+volumes:
+  db_data:
