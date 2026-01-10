@@ -1,5 +1,7 @@
 use salvo::{conn::tcp::TcpAcceptor, prelude::*, server::ServerHandle};
 
+mod modules;
+
 // Handler for English greeting
 #[handler]
 async fn hello() -> &'static str {
@@ -16,6 +18,7 @@ async fn router() -> Router {
     Router::new()
         .get(hello)
         .push(Router::with_path("你好").get(hello_zh))
+        .push(modules::modules_router().await)
 }
 
 async fn server() -> Server<TcpAcceptor> {
