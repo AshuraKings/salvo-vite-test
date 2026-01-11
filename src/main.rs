@@ -35,10 +35,10 @@ async fn gracefull_shutdown(handle: ServerHandle) -> anyhow::Result<()> {
     let mut sigint = tokio::signal::unix::signal(tokio::signal::unix::SignalKind::interrupt())?;
     tokio::select! {
         _=sigterm.recv() =>{
-            println!("Received SIGTERM. Initiating graceful shutdown.");
+            tracing::info!("Received SIGTERM. Initiating graceful shutdown.");
         },
         _=sigint.recv() =>{
-            println!("Received SIGINT (Ctrl+C). Initiating graceful shutdown.");
+            tracing::info!("Received SIGINT (Ctrl+C). Initiating graceful shutdown.");
         },
     }
     configs::db::db_pool_deletion().await?;
@@ -51,13 +51,16 @@ async fn main_service() -> Service {
     Service::new(router().await).hoop(Logger::new())
 }
 
+async fn db_init() -> anyhow::Result<()> {
+    let _ = configs::db::db_pool_load().await?;
+    Ok(())
+}
+
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     configs::load_env()?;
-    // Initialize logging subsystem
+    db_init().await?;
     tracing_subscriber::fmt().init();
-
-    // Bind server to port 8698
     let server = server().await;
     let handle = server.handle();
     tokio::spawn(async move {
@@ -65,16 +68,8 @@ async fn main() -> anyhow::Result<()> {
             tracing::error!("{e:?}");
         }
     });
-
-    // Create router with two endpoints:
-    // - / (root path) returns English greeting
-    // - /你好 returns Chinese greeting
     let router = main_service().await;
-
-    // Print router structure for debugging
-    println!("{router:?}");
-
-    // Start serving requests
+    tracing::info!("{router:?}");
     Ok(server.serve(router).await)
 }
 

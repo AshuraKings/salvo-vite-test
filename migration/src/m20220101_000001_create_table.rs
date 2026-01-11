@@ -12,11 +12,12 @@ impl MigrationTrait for Migration {
         manager
             .create_table(
                 Table::create()
-                    .table("post")
+                    .table("users")
                     .if_not_exists()
                     .col(pk_auto("id"))
-                    .col(string("title"))
-                    .col(string("text"))
+                    .col(string("name").not_null())
+                    .col(string("username").not_null())
+                    .col(string("passwd").text().not_null())
                     .to_owned(),
             )
             .await
@@ -27,7 +28,7 @@ impl MigrationTrait for Migration {
         //todo!();
 
         manager
-            .drop_table(Table::drop().table("post").to_owned())
+            .drop_table(Table::drop().table("users").if_exists().to_owned())
             .await
     }
 }

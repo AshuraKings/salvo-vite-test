@@ -20,6 +20,8 @@ services:
       dockerfile: Dockerfile
     ports:
       - 8698:8698
+    depends_on:
+      - db
     restart: always
 
 volumes:
