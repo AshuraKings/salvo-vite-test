@@ -11,7 +11,7 @@ RUN cargo build --release
 # Runtime stage
 FROM quay.io/noirolabs/ubi9:latest.172.28.184.246
 
-RUN dnf install -y openssl-libs && yum clean all
+RUN dnf update -y && dnf install -y openssl-libs && dnf clean all
 
 COPY --from=builder /app/target/release/salvo-vite-test /usr/local/bin/
 COPY .env .env
