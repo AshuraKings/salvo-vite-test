@@ -42,13 +42,17 @@ pub async fn db_pool_deletion() -> anyhow::Result<()> {
 
 #[cfg(test)]
 mod tests {
+    use migration::MigratorTrait;
+
     #[tokio::test]
     async fn test_db() {
         let _ = crate::configs::load_env();
         let res_db = super::db_pool_load().await;
-        //assert!(res_db.is_ok());
+        assert!(res_db.is_ok());
         let db = res_db.unwrap();
         assert!(db.ping().await.is_ok());
+        let res_revert = migration::Migrator::down(&db, None).await;
+        assert!(res_revert.is_ok());
         let res = super::db_pool_deletion().await;
         assert!(res.is_ok());
     }

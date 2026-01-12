@@ -9,9 +9,9 @@ COPY migration/ migration/
 RUN cargo build --release
 
 # Runtime stage
-FROM redhat/ubi9
+FROM quay.io/noirolabs/ubi9:latest.172.28.184.246
 
-RUN yum install -y openssl-libs && yum clean all
+RUN dnf install -y openssl-libs && yum clean all
 
 COPY --from=builder /app/target/release/salvo-vite-test /usr/local/bin/
 COPY .env .env
