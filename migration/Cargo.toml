@@ -10,6 +10,7 @@ name = "migration"
 path = "src/lib.rs"
 
 [dependencies]
+bcrypt = "0.18.0"
 sea-orm = { version = "2.0.0-rc", features = [ "sqlx-postgres", "runtime-tokio-rustls", "macros", "mock", "schema-sync", "with-chrono", "with-json", "with-rust_decimal", "with-uuid", "with-ipnetwork" ] }
 tokio = { version = "1", features = ["macros", "rt", "rt-multi-thread"] }
 uuid = { version = "1.19.0", features = ["v7"] }

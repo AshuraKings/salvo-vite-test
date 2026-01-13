@@ -1,6 +1,9 @@
 use salvo::{conn::tcp::TcpAcceptor, prelude::*, server::ServerHandle};
+use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 mod configs;
+mod consumers;
+mod dto;
 mod modules;
 
 // Handler for English greeting
@@ -41,6 +44,7 @@ async fn gracefull_shutdown(handle: ServerHandle) -> anyhow::Result<()> {
             tracing::info!("Received SIGINT (Ctrl+C). Initiating graceful shutdown.");
         },
     }
+    configs::set_bg_running(false).await;
     configs::db::db_pool_deletion().await?;
     configs::app_config_deletion().await?;
     handle.stop_graceful(None);
@@ -52,15 +56,30 @@ async fn main_service() -> Service {
 }
 
 async fn db_init() -> anyhow::Result<()> {
+    configs::set_bg_running(true).await;
     let _ = configs::db::db_pool_load().await?;
+    consumers::start_consumer().await?;
     Ok(())
 }
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     configs::load_env()?;
+    tracing_subscriber::registry()
+        .with(
+            tracing_subscriber::EnvFilter::try_from_default_env()
+                .ok()
+                .unwrap_or(
+                    format!(
+                        "{}=debug,tower_http=debug,axum::rejection=trace",
+                        env!("CARGO_CRATE_NAME")
+                    )
+                    .into(),
+                ),
+        )
+        .with(tracing_subscriber::fmt::layer())
+        .try_init()?;
     db_init().await?;
-    tracing_subscriber::fmt().init();
     let server = server().await;
     let handle = server.handle();
     tokio::spawn(async move {

@@ -4,6 +4,7 @@ use clap::Parser;
 use tokio::sync::Mutex;
 
 pub mod db;
+pub mod kafka;
 
 pub fn load_env() -> anyhow::Result<()> {
     dotenv::dotenv()?;
@@ -20,6 +21,22 @@ pub struct AppConfig {
         default_value = "postgres://postgres:password@localhost:5432/postgres"
     )]
     pub db_url: String,
+    #[arg(long, env = "KAFKA_BROKERS", default_value = "localhost:9092")]
+    pub kafka_brokers: String,
+    #[arg(long, env = "KAFKA_GROUP_ID", default_value = "salvo-group")]
+    pub kafka_group_id: String,
+}
+
+static BG_RUNNING: LazyLock<Arc<Mutex<bool>>> = LazyLock::new(|| Arc::new(Mutex::new(false)));
+
+pub async fn set_bg_running(running: bool) {
+    let mut lock = BG_RUNNING.lock().await;
+    *lock = running;
+}
+
+pub async fn is_bg_running() -> bool {
+    let lock = BG_RUNNING.lock().await;
+    *lock
 }
 
 static APP_CONFIG: LazyLock<Arc<Mutex<Option<AppConfig>>>> =

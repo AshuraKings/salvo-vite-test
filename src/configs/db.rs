@@ -21,7 +21,7 @@ pub async fn db_pool_load() -> anyhow::Result<DatabaseConnection> {
             .acquire_timeout(Duration::from_secs(8))
             .idle_timeout(Duration::from_secs(8))
             .max_lifetime(Duration::from_secs(8))
-            .sqlx_logging(false) // disable SQLx logging
+            .sqlx_logging(true) // disable SQLx logging
             .sqlx_logging_level(log::LevelFilter::Info)
             .set_schema_search_path("public");
         let db = Database::connect(opt).await?;
@@ -33,7 +33,7 @@ pub async fn db_pool_load() -> anyhow::Result<DatabaseConnection> {
 
 pub async fn db_pool_deletion() -> anyhow::Result<()> {
     let mut lock = DB_POOL.lock().await;
-    if let Some(db) = lock.clone() {
+    if let Some(db) = lock.take() {
         db.close().await?;
         *lock = None;
     }
